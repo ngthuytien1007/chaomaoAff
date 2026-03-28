@@ -245,7 +245,7 @@ export default function Home() {
           <Bot size={22} />
           <span>Tư vấn AI</span>
         </Link>
-        <Link href="#products-section" className="mobile-nav-item mobile-nav-center-item">
+        <Link href="/san-pham" className="mobile-nav-item mobile-nav-center-item">
           <div className="mobile-nav-center-icon" aria-hidden="true">
             <Store size={22} />
           </div>
