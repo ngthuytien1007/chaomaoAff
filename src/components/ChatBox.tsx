@@ -16,7 +16,7 @@ interface Message {
 
 const LS_KEY = "chaomao_ai_v2_history";
 const WELCOME_MSG =
-  "Dạ chào anh! 👋 Em là **Bác Tư Chào Mào** – 20 năm trong nghề, đã đi qua không biết bao nhiêu hội thi toàn quốc. Anh cần tư vấn thay lông, trị sình bụng, chọn cám thi đấu, hay tìm lồng đẹp thì cứ hỏi em nhé ạ! 🐦";
+  "Dạ chào anh! 👋 Em là **Giáo Sư Chào Mào** – 20 năm trong nghề, đã đi qua không biết bao nhiêu hội thi toàn quốc. Anh cần tư vấn thay lông, trị sình bụng, chọn cám thi đấu, hay tìm lồng đẹp thì cứ hỏi em nhé ạ! 🐦";
 
 function formatMessage(content: string) {
   return content
@@ -136,7 +136,7 @@ export function ChatBox() {
             <div className="chat-avatar">
               <Image
                 src="/images/CM1.jpg"
-                alt="Bác Tư Chào Mào"
+                alt="Giáo Sư Chào Mào"
                 fill
                 className="object-cover rounded-full"
                 sizes="48px"
@@ -145,7 +145,7 @@ export function ChatBox() {
             <span className="chat-online-dot" />
           </div>
           <div>
-            <h3 className="chat-expert-name">Bác Tư Chào Mào</h3>
+            <h3 className="chat-expert-name">Giáo Sư Chào Mào</h3>
             <p className="chat-expert-status">
               <span className="chat-online-pulse" />
               Đang trực tuyến • 20 năm kinh nghiệm
@@ -234,9 +234,9 @@ export function ChatBox() {
               <Bot size={14} />
             </div>
             <div className="msg-bubble-ai typing-indicator-bubble">
-              <span className="typing-label">Bác Tư đang nhập</span>
+              <span className="typing-label">Giáo Sư đang nhập</span>
               <div className="dot-typing">
-                <span />
+                <span />1
                 <span />
                 <span />
               </div>

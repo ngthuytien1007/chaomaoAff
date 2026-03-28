@@ -138,7 +138,7 @@ export default function Home() {
             AI Chuyên Gia
           </div>
           <h2 className="section-title">
-            Hỏi <span className="text-primary">Bác Tư</span> Bất Cứ Điều Gì
+            Hỏi <span className="text-primary">Giáo Sư Chào Mào</span> Bất Cứ Điều Gì
           </h2>
           <p className="section-desc">
             Nghệ nhân AI 20 năm kinh nghiệm. Tư vấn miễn phí 24/7 về bệnh,
@@ -200,7 +200,7 @@ export default function Home() {
                 Sản Phẩm <span className="text-primary">Khuyên Dùng</span>
               </h2>
             </div>
-            <Link href="#" className="view-all-link group">
+            <Link href="/san-pham" className="view-all-link group">
               Xem toàn bộ cửa hàng
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
