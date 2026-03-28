@@ -1,6 +1,8 @@
 // src/app/api/chat/route.ts
 import { NextResponse } from "next/server";
 import { SYSTEM_PROMPT, getRelatedProducts } from "@/lib/constants";
+import fs from "fs";
+import path from "path";
 
 const MODEL = "google/gemini-2.5-flash";
 
@@ -13,6 +15,36 @@ export async function POST(req: Request) {
     }
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
+
+    // 1. Lấy thông tin người dùng (IP, User-Agent)
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "Không xác định";
+    const userAgent = req.headers.get("user-agent") || "Không xác định";
+    
+    // 2. Trích xuất số điện thoại từ câu hỏi (nếu khách có để lại)
+    const phoneRegex = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
+    const phonesFound = lastUserMessage.match(phoneRegex) || [];
+
+    // 3. Chuẩn bị dữ liệu lưu trữ
+    const visitorData = {
+      thoi_gian: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
+      ip,
+      thiet_bi: userAgent,
+      sdt_phat_hien: phonesFound.length > 0 ? phonesFound : "Không có",
+      cau_hoi: lastUserMessage
+    };
+
+    // 4. In ra console (dành cho log server/Vercel)
+    console.log("=== THÔNG TIN KHÁCH HÀNG ===");
+    console.log(visitorData);
+    console.log("============================");
+
+    // 5. Lưu vào file visitors.log ở thư mục gốc (áp dụng tốt nhất khi chạy ở VPS/Local)
+    try {
+      const logPath = path.join(process.cwd(), "visitors.log");
+      fs.appendFileSync(logPath, JSON.stringify(visitorData) + "\n", "utf8");
+    } catch (fsError) {
+      console.error("Không thể ghi file log:", fsError);
+    }
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
