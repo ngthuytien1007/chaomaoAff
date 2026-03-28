@@ -1,12 +1,11 @@
 // src/app/api/chat/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { SYSTEM_PROMPT, getRelatedProducts } from "@/lib/constants";
-import fs from "fs";
-import path from "path";
+import { supabase } from "@/lib/supabase";
 
 const MODEL = "google/gemini-2.5-flash";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
@@ -16,34 +15,42 @@ export async function POST(req: Request) {
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
 
-    // 1. Lấy thông tin người dùng (IP, User-Agent)
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "Không xác định";
-    const userAgent = req.headers.get("user-agent") || "Không xác định";
-    
-    // 2. Trích xuất số điện thoại từ câu hỏi (nếu khách có để lại)
-    const phoneRegex = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
-    const phonesFound = lastUserMessage.match(phoneRegex) || [];
+    // 1. Lấy thông tin địa lý từ Vercel Headers (Cực chuẩn)
+    const city = req.headers.get('x-vercel-ip-city') || 'Unknown';
+    const country = req.headers.get('x-vercel-ip-country') || 'Unknown';
+    const region = req.headers.get('x-vercel-ip-country-region') || 'Unknown';
+    const latitude = req.headers.get('x-vercel-ip-latitude') || 'Unknown';
+    const longitude = req.headers.get('x-vercel-ip-longitude') || 'Unknown';
+    const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for') || "Unknown";
 
-    // 3. Chuẩn bị dữ liệu lưu trữ
+    // 2. Lấy User-Agent
+    const userAgent = req.headers.get('user-agent') || '';
+    
     const visitorData = {
-      thoi_gian: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
       ip,
-      thiet_bi: userAgent,
-      sdt_phat_hien: phonesFound.length > 0 ? phonesFound : "Không có",
-      cau_hoi: lastUserMessage
+      location: `${city}, ${region}, ${country} (${latitude}, ${longitude})`,
+      device: userAgent, // Có thể bổ sung từ client data nếu cần
+      userAgent
     };
 
-    // 4. In ra console (dành cho log server/Vercel)
-    console.log("=== THÔNG TIN KHÁCH HÀNG ===");
-    console.log(visitorData);
-    console.log("============================");
-
-    // 5. Lưu vào file visitors.log ở thư mục gốc (áp dụng tốt nhất khi chạy ở VPS/Local)
+    // Thay cho đoạn fs.appendFileSync cũ:
     try {
-      const logPath = path.join(process.cwd(), "visitors.log");
-      fs.appendFileSync(logPath, JSON.stringify(visitorData) + "\n", "utf8");
-    } catch (fsError) {
-      console.error("Không thể ghi file log:", fsError);
+      const { error } = await supabase
+        .from('visitors')
+        .insert([
+          { 
+            ip: visitorData.ip, 
+            location: visitorData.location, 
+            device: visitorData.device,
+            user_agent: visitorData.userAgent,
+            content: messages[messages.length - 1]?.content || "" // Lưu câu hỏi cuối cùng của khách
+          }
+        ]);
+
+      if (error) throw error;
+      console.log("✅ Đã lưu thông tin khách vào Supabase");
+    } catch (error) {
+      console.error("❌ Lỗi lưu Supabase:", error);
     }
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
