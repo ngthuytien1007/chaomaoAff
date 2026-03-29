@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
+    const sessionId = req.headers.get('x-sportaiv-sid');
 
     // 1. Lấy thông tin địa lý từ Vercel Headers (Cực chuẩn)
     const city = req.headers.get('x-vercel-ip-city') || 'Unknown';
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
         .from('visitors')
         .insert([
           { 
+            session_id: sessionId || visitorData.ip, // Lưu luôn IP nếu ko có session
             ip: visitorData.ip, 
             location: visitorData.location, 
             device: visitorData.device,
@@ -85,6 +87,20 @@ export async function POST(req: NextRequest) {
     const aiAnswer =
       data.choices?.[0]?.message?.content ||
       "Xin lỗi anh, em chưa hiểu rõ. Anh hỏi lại được không ạ?";
+
+    // LƯU DATA: Dùng Insert vào bảng chat_history
+    if (sessionId) {
+      try {
+        await supabase.from('chat_history').insert([{
+          session_id: sessionId,
+          user_question: lastUserMessage,
+          ai_response: aiAnswer,
+          tokens_used: data.usage?.total_tokens || 100 // Lấy từ response nếu có, không thì dự phòng 100
+        }]);
+      } catch (err) {
+        console.error("Lỗi lưu chat_history:", err);
+      }
+    }
 
     const suggestedProducts = getRelatedProducts(lastUserMessage);
 
