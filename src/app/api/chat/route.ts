@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
 
     const data = await res.json() as {
       choices?: Array<{ message?: { content?: string } }>;
+      usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
     };
 
     const aiAnswer =
