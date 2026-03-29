@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
     const { error: visitError } = await supabase.from('visits').insert([
       {
         session_id:      sessionId,
+        created_at:      now,
         ip_address:      ip,
         city,
         region,

@@ -55,12 +55,14 @@ export async function POST(req: NextRequest) {
 
     // LƯU vào chat_history — session_id phải là UUID hợp lệ (đã được tạo bởi proxy)
     if (sessionId) {
+      const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' }).replace(' ', 'T') + '+07:00';
       try {
         const { error } = await supabase.from('chat_history').insert([{
           session_id:    sessionId,
           user_question: lastUserMessage,
           ai_response:   aiAnswer,
           tokens_used:   tokensUsed,
+          created_at:    now,
         }]);
         if (error) throw error;
       } catch (err) {
