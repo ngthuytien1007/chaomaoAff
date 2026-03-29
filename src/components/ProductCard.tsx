@@ -15,6 +15,18 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const stars = Array.from({ length: 5 }, (_, i) => i + 1);
 
+  // Gửi tracking fire-and-forget — không block navigation
+  const handleAffiliateClick = () => {
+    fetch('/api/track-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productName: product.name,
+        productLink: product.affiliate_url,
+      }),
+    }).catch(() => { /* silent fail */ });
+  };
+
   return (
     <>
       {/* CƠ BẢN HOẶC COMPACT CARD */}
@@ -49,6 +61,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
               href={product.affiliate_url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleAffiliateClick}
               className="product-card-compact-btn flex items-center justify-center gap-1 bg-[#0068FF] hover:bg-[#0055D4] text-white"
             >
               <MessageCircle size={10} />
@@ -130,6 +143,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
               href={product.affiliate_url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={handleAffiliateClick}
               className="product-card-cta flex items-center justify-center gap-2 bg-[#0068FF] hover:bg-[#0055D4] text-white"
             >
               <MessageCircle size={16} />
@@ -231,6 +245,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                 href={product.affiliate_url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleAffiliateClick}
                 className="w-full py-4 px-6 bg-[#0068FF] hover:bg-[#0055D4] text-white rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-colors shadow-lg shadow-blue-500/25"
               >
                 <MessageCircle size={24} />
