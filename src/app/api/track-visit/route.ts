@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
     const utmMedium        = body.utm?.medium       || '';
     const utmCampaign      = body.utm?.campaign     || '';
 
-    const now = new Date().toISOString();
+    // Thời gian theo múi giờ Việt Nam (UTC+7)
+    const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' }).replace(' ', 'T') + '+07:00';
 
     // 5. UPSERT vào bảng profiles — lưu đầy đủ thông tin
     const { error: profileError } = await supabase.from('profiles').upsert(
