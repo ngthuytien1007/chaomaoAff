@@ -12,11 +12,13 @@ export default function VisitorTracker() {
       const botScore = !navigator.cookieEnabled || navigator.webdriver ? 100 : 0;
 
       const visitorData = {
-        referrer: document.referrer || 'Direct',
-        url: window.location.href,
-        utm: Object.fromEntries(new URLSearchParams(window.location.search)),
-        language: navigator.language || '',
-        bot_score: botScore,
+        referrer:          document.referrer || 'Direct',
+        url:               window.location.href,
+        utm:               Object.fromEntries(new URLSearchParams(window.location.search)),
+        language:          navigator.language || '',
+        bot_score:         botScore,
+        screen_resolution: `${window.screen.width}x${window.screen.height}`,
+        timezone:          Intl.DateTimeFormat().resolvedOptions().timeZone || '',
       };
 
       // Chờ browser rảnh mới gửi (cực kỳ tối ưu cho LCP / CLS)

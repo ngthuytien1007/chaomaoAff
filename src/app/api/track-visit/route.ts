@@ -36,11 +36,13 @@ function parseUA(ua: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as {
-      referrer?: string;
-      url?: string;
-      utm?: Record<string, string>;
-      language?: string;
-      bot_score?: number;
+      referrer?:          string;
+      url?:               string;
+      utm?:               Record<string, string>;
+      language?:          string;
+      bot_score?:         number;
+      screen_resolution?: string;
+      timezone?:          string;
     };
 
     // 1. Session ID từ proxy (đã được gắn vào header)
@@ -50,50 +52,69 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Thông tin địa lý từ Vercel Headers
-    const ip =
-      req.headers.get('x-real-ip') ||
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      'Unknown';
-    const city    = decodeURIComponent(req.headers.get('x-vercel-ip-city') || '');
-    const country = req.headers.get('x-vercel-ip-country') || '';
-    const region  = req.headers.get('x-vercel-ip-country-region') || '';
-    const postal  = req.headers.get('x-vercel-ip-postal-code') || '';
-    const asOrg   = req.headers.get('x-vercel-ip-as-organization') || '';
+    const ip       = req.headers.get('x-real-ip') ||
+                     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '';
+    const city     = decodeURIComponent(req.headers.get('x-vercel-ip-city') || '');
+    const country  = req.headers.get('x-vercel-ip-country') || '';
+    const region   = req.headers.get('x-vercel-ip-country-region') || '';
+    const latitude = req.headers.get('x-vercel-ip-latitude') || '';
+    const longitude= req.headers.get('x-vercel-ip-longitude') || '';
+    const postal   = req.headers.get('x-vercel-ip-postal-code') || '';
+    const asOrg    = req.headers.get('x-vercel-ip-as-organization') || '';
 
-    // 3. Parse User-Agent
+    // 3. User-Agent & parse
     const userAgent = req.headers.get('user-agent') || '';
     const { os, browser, deviceType } = parseUA(userAgent);
 
+    // Tổng hợp location text (tiện đọc)
+    const locationText = [city, region, country].filter(Boolean).join(', ');
+
     // 4. Dữ liệu từ client
-    const language  = body.language  || '';
-    const botScore  = body.bot_score  ?? null;
-    const referrer  = body.referrer   || '';
-    const utmSource   = body.utm?.source   || '';
-    const utmMedium   = body.utm?.medium   || '';
-    const utmCampaign = body.utm?.campaign || '';
+    const language         = body.language          || '';
+    const botScore         = body.bot_score         ?? null;
+    const referrer         = body.referrer          || '';
+    const screenResolution = body.screen_resolution || '';
+    const timezone         = body.timezone          || '';
+    const utmSource        = body.utm?.source       || '';
+    const utmMedium        = body.utm?.medium       || '';
+    const utmCampaign      = body.utm?.campaign     || '';
 
     const now = new Date().toISOString();
 
-    // 5. UPSERT vào bảng profiles (tạo mới hoặc cập nhật last_seen)
+    // 5. UPSERT vào bảng profiles — lưu đầy đủ thông tin
     const { error: profileError } = await supabase.from('profiles').upsert(
       {
-        session_id:  sessionId,
-        last_seen:   now,
-        first_seen:  now, // bị ignore khi conflict nếu dùng ignoreDuplicates: false (default)
-        device_type: deviceType,
+        session_id:        sessionId,
+        last_seen:         now,
+        first_seen:        now,       // bị ignore khi conflict (Supabase giữ giá trị cũ)
+        // Thiết bị
+        device_type:       deviceType,
+        device:            deviceType,   // alias để tương thích cột cũ
         os,
         browser,
+        user_agent:        userAgent,
+        screen_resolution: screenResolution,
+        // Vị trí
+        city,
+        country,
+        region,
+        latitude,
+        longitude,
+        location:          locationText, // text đọc nhanh
+        // Hành vi
         language,
-        bot_score:   botScore,
+        timezone,
+        referrer,
+        bot_score:         botScore,
       },
       {
         onConflict:       'session_id',
-        ignoreDuplicates: false, // Cho phép update last_seen
+        ignoreDuplicates: false,         // update last_seen + các field mới nếu có
       }
     );
     if (profileError) throw profileError;
 
-    // 6. INSERT vào bảng visits
+    // 6. INSERT vào bảng visits (mỗi lần vào trang = 1 dòng)
     const { error: visitError } = await supabase.from('visits').insert([
       {
         session_id:      sessionId,
@@ -114,7 +135,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('❌ track-visit error:', err);
-    // Trả 200 để frontend không bị lỗi JS
     return NextResponse.json({ ok: false }, { status: 200 });
   }
 }
