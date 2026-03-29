@@ -18,7 +18,7 @@ export function proxy(request: NextRequest) {
     cookieSet = true;
   }
 
-  // Gắn ngược lại vào Request Header để các API Route bên trong (ví dụ app/api/chat) lấy dùng
+  // Gắn ngược lại vào Request Header để các API Route bên trong lấy dùng
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-sportaiv-sid', sessionId);
 
@@ -38,16 +38,16 @@ export function proxy(request: NextRequest) {
     });
   }
 
-  // Cũng trả lại trong Response headers để Client (nếu cần) có thể thấy
   response.headers.set('x-sportaiv-sid', sessionId);
 
   return response;
 }
 
-// Cấu hình matcher để middleware chỉ chạy ở những route cần thiết
+// Mở rộng matcher: chạy trên cả trang HTML lẫn API
+// để session_id được cấp trước khi frontend gọi track-visit
 export const config = {
   matcher: [
-    // Bắt toàn bộ các request vào API
-    '/api/:path*',
+    // Toàn bộ route, bỏ qua static files và image optimization
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
