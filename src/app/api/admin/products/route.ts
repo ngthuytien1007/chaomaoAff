@@ -46,9 +46,10 @@ export async function POST(req: NextRequest) {
         upsert: true,
       });
 
-    if (uploadError) {
-      console.error("Lỗi đăng ảnh:", uploadError);
-      return NextResponse.json({ error: "Đăng ảnh bị lỗi: " + uploadError.message }, { status: 500 });
+    if (uploadError || !uploadData) {
+      const msg = uploadError?.message || 'uploadData rỗng';
+      console.error("Lỗi đăng ảnh:", msg);
+      return NextResponse.json({ error: "Đăng ảnh bị lỗi: " + msg }, { status: 500 });
     }
 
     // Lấy link ảnh vĩnh viễn (Public URL)
@@ -75,7 +76,13 @@ export async function POST(req: NextRequest) {
 
     if (dbError) {
       console.error("Lỗi lưu Database:", dbError);
-      return NextResponse.json({ error: "Lưu dữ liệu database thất bại" }, { status: 500 });
+      // Trả chi tiết lỗi về client để debug
+      return NextResponse.json({
+        error: "Lưu dữ liệu database thất bại",
+        detail: dbError.message,
+        hint: dbError.hint || null,
+        code: dbError.code || null,
+      }, { status: 500 });
     }
 
     // inserted will be an array with the new product record
