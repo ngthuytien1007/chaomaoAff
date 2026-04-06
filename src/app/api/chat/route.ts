@@ -4,7 +4,7 @@ import { SYSTEM_PROMPT, ALL_PRODUCTS, getRelatedProducts, getSimpleResponse } fr
 import { supabase } from "@/lib/supabase";
 
 // Model miễn phí cho câu hỏi phức tạp (không có template)
-const FREE_MODEL = "google/gemini-2.0-flash-exp:free";
+const FREE_MODEL = "openrouter/free";
 
 export async function POST(req: NextRequest) {
   try {
