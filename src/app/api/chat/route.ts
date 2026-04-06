@@ -18,22 +18,58 @@ export async function POST(req: NextRequest) {
     const sessionId = req.headers.get('x-sportaiv-sid');
 
     // ── Bước 1: Kiểm tra câu hỏi đơn giản (có template sẵn) ──────────────
-    const simpleResp = getSimpleResponse(lastUserMessage);
+    let answerFromTemplate: string | null = null;
+    let templateProductIds: string[] = [];
 
-    if (simpleResp) {
+    // 1.A Thử kéo dữ liệu từ bảng chat_templates trên Supabase trước
+    try {
+      const { data: dbTemplates, error: dbError } = await supabase
+        .from('chat_templates')
+        .select('keywords, answer, product_ids');
+        
+      if (!dbError && dbTemplates && dbTemplates.length > 0) {
+        const lowerMsg = lastUserMessage.toLowerCase();
+        for (const tmpl of dbTemplates) {
+          if (!tmpl.keywords) continue;
+          // Chia cắt các từ khóa dip qua dấu phẩy
+          const kws = tmpl.keywords.split(',').map((k: string) => k.trim().toLowerCase());
+          
+          if (kws.some((k: string) => k.length > 0 && lowerMsg.includes(k))) {
+            answerFromTemplate = tmpl.answer;
+            if (tmpl.product_ids) {
+               templateProductIds = tmpl.product_ids.split(',').map((id: string) => id.trim());
+            }
+            break; // Trúng 1 phát là ngưng quét luôn
+          }
+        }
+      }
+    } catch (e) {
+      console.error("❌ Lỗi kéo template từ DB, sẽ fallback về constants:", e);
+    }
+
+    // 1.B Nếu không tìm được trong Database (hoặc bảng lỗi), Backup quét file tĩnh
+    if (!answerFromTemplate) {
+      const simpleResp = getSimpleResponse(lastUserMessage);
+      if (simpleResp) {
+        answerFromTemplate = simpleResp.answer;
+        templateProductIds = simpleResp.productIds;
+      }
+    }
+
+    if (answerFromTemplate) {
       // Trả lời từ template, KHÔNG gọi AI → miễn phí 100%
       const suggestedProducts = ALL_PRODUCTS.filter((p) =>
-        simpleResp.productIds.includes(p.id)
+        templateProductIds.includes(p.id)
       );
 
-      // Vẫn lưu lịch sử chat
+      // Lưu lịch sử chat dạng template
       if (sessionId) {
         const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' }).replace(' ', 'T') + '+07:00';
         try {
           const { error } = await supabase.from('chat_history').insert([{
             session_id:    sessionId,
             user_question: lastUserMessage,
-            ai_response:   simpleResp.answer,
+            ai_response:   answerFromTemplate,
             tokens_used:   0,
             created_at:    now,
           }]);
@@ -43,7 +79,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      return NextResponse.json({ answer: simpleResp.answer, suggestedProducts });
+      return NextResponse.json({ answer: answerFromTemplate, suggestedProducts });
     }
 
     // ── Bước 2: Câu hỏi phức tạp → gọi model miễn phí ───────────────────
