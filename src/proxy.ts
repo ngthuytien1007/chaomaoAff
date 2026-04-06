@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-export function proxy(request: NextRequest) {
+import { updateSession } from '@/utils/supabase/middleware';
+
+export async function proxy(request: NextRequest) {
   // 1. Kiểm tra ID từ Cloudflare gửi sang
   let sessionId = request.headers.get('x-sportaiv-sid');
 
@@ -40,7 +42,8 @@ export function proxy(request: NextRequest) {
 
   response.headers.set('x-sportaiv-sid', sessionId);
 
-  return response;
+  // 4. Pass Request và cấu hình Proxy Response cho hệ thống Supabase Auth Middleware tiếp nối
+  return await updateSession(request, response);
 }
 
 // Mở rộng matcher: chạy trên cả trang HTML lẫn API
