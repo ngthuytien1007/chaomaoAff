@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ 
         success: true, 
-        message: \`Đã xóa \${idsToDelete.length} mẫu câu bị lỗi chính tả/ngáo ngơ. Đã tạo mới 1 mẫu Template chuẩn Danh Tính AI.\`,
+        message: `Đã xóa ${idsToDelete.length} mẫu câu bị lỗi chính tả/ngáo ngơ. Đã tạo mới 1 mẫu Template chuẩn Danh Tính AI.`,
         deletedIds: idsToDelete
     });
 
