@@ -1,9 +1,10 @@
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { SYSTEM_PROMPT, getRelatedProducts } from "@/lib/constants";
+import { SYSTEM_PROMPT, ALL_PRODUCTS, getRelatedProducts, getSimpleResponse } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 
-const MODEL = "google/gemini-2.5-flash";
+// Model miễn phí cho câu hỏi phức tạp (không có template)
+const FREE_MODEL = "google/gemini-2.0-flash-exp:free";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +17,36 @@ export async function POST(req: NextRequest) {
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
     const sessionId = req.headers.get('x-sportaiv-sid');
 
-    // Gọi AI
+    // ── Bước 1: Kiểm tra câu hỏi đơn giản (có template sẵn) ──────────────
+    const simpleResp = getSimpleResponse(lastUserMessage);
+
+    if (simpleResp) {
+      // Trả lời từ template, KHÔNG gọi AI → miễn phí 100%
+      const suggestedProducts = ALL_PRODUCTS.filter((p) =>
+        simpleResp.productIds.includes(p.id)
+      );
+
+      // Vẫn lưu lịch sử chat
+      if (sessionId) {
+        const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' }).replace(' ', 'T') + '+07:00';
+        try {
+          const { error } = await supabase.from('chat_history').insert([{
+            session_id:    sessionId,
+            user_question: lastUserMessage,
+            ai_response:   simpleResp.answer,
+            tokens_used:   0,
+            created_at:    now,
+          }]);
+          if (error) throw error;
+        } catch (err) {
+          console.error("❌ Lỗi lưu chat_history (template):", err);
+        }
+      }
+
+      return NextResponse.json({ answer: simpleResp.answer, suggestedProducts });
+    }
+
+    // ── Bước 2: Câu hỏi phức tạp → gọi model miễn phí ───────────────────
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -26,7 +56,7 @@ export async function POST(req: NextRequest) {
         "X-Title": "Chào Mào AI",
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: FREE_MODEL,
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
         max_tokens: 512,
         temperature: 0.7,
@@ -53,7 +83,7 @@ export async function POST(req: NextRequest) {
 
     const tokensUsed = data.usage?.total_tokens ?? null;
 
-    // LƯU vào chat_history — session_id phải là UUID hợp lệ (đã được tạo bởi proxy)
+    // Lưu lịch sử chat
     if (sessionId) {
       const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' }).replace(' ', 'T') + '+07:00';
       try {
@@ -81,3 +111,4 @@ export async function POST(req: NextRequest) {
     });
   }
 }
+

@@ -138,6 +138,121 @@ export function getRelatedProducts(query: string): Product[] {
     .slice(0, 3);
 }
 
+// ─── Template responses (no AI call needed) ───────────────────────────────────
+
+export interface SimpleResponse {
+  keywords: string[];
+  answer: string;
+  productIds: string[];
+}
+
+export const SIMPLE_RESPONSES: SimpleResponse[] = [
+  {
+    keywords: ["sình bụng", "bụng phình", "ỉa chảy", "tiêu chảy"],
+    answer:
+      "Chim bị sình bụng thì anh làm vầy nè:\n\n" +
+      "1. **Ngưng mồi tươi ngay** (dế, sâu, trứng kiến)\n" +
+      "2. **Đổi sang cám mát** – giúp làm dịu hệ tiêu hóa nhanh\n" +
+      "3. Cho ăn 1-2 lá trầu không tươi mỗi ngày\n" +
+      "4. Tắm nắng nhẹ buổi sáng 15-20 phút\n\n" +
+      "Thường 3-5 ngày là ổn lại. Anh thử cho uống nước sắc lá ổi non cũng rất hiệu quả nha!\n\n" +
+      "Chim anh bị mấy ngày rồi anh?",
+    productIds: ["m1"],
+  },
+  {
+    keywords: ["sổng lửa", "mất lửa", "không hót", "lười hót", "im lặng", "không chịu hót"],
+    answer:
+      "Chim sổng lửa có nhiều nguyên nhân lắm anh ơi:\n\n" +
+      "1. **Đổi vị trí treo lồng** – chỗ mới kích thích chim tốt hơn\n" +
+      "2. **Tắm nắng sáng sớm** 20-30 phút, tránh nắng gắt\n" +
+      "3. **Cho nghe băng tiếng chào mào** khỏe để kích chiến\n" +
+      "4. **Tăng mồi tươi** lên: dế nhỏ, trứng kiến tươi\n" +
+      "5. Kiểm tra xem chim có đang thay lông không nha\n\n" +
+      "Anh cho chim nghe chiến bao lâu rồi mà chưa thấy lên lửa?",
+    productIds: ["m2"],
+  },
+  {
+    keywords: ["thay lông", "rụng lông", "lông mới", "lông xơ"],
+    answer:
+      "Mùa thay lông chim cần chăm đặc biệt anh nè:\n\n" +
+      "1. **Dùng cám thay lông** – giàu côn trùng tự nhiên, lông mọc đẹp và bóng\n" +
+      "2. Tăng trứng kiến + sâu quy 3-4 lần/tuần\n" +
+      "3. **Tắm thường xuyên hơn** để lông mới sạch và mượt\n" +
+      "4. Hạn chế cho đấu – tập trung năng lượng mọc lông\n" +
+      "5. Bổ sung vitamin tổng hợp vào nước uống\n\n" +
+      "Mùa thay lông thường kéo dài 1-2 tháng. Anh đang nuôi chim loại gì vậy?",
+    productIds: ["m3"],
+  },
+  {
+    keywords: ["cám đấu", "cám thi", "căng lửa", "kích lửa", "trước thi", "trước giải"],
+    answer:
+      "Chuẩn bị chim trước thi thì anh cần:\n\n" +
+      "1. **Dùng cám đấu năng lượng cao** – tăng protein, kích lửa mạnh\n" +
+      "2. Trước thi 3 ngày: tăng dế tươi, giảm tắm\n" +
+      "3. **Buổi sáng thi**: cho nghe băng chiến 30 phút từ xa\n" +
+      "4. Tránh cho chim nhìn thấy đối thủ quá sớm\n" +
+      "5. Áo lồng kín cho đến khi vào sân\n\n" +
+      "Combo 5 gói cám đấu tiết kiệm hơn mua lẻ nhiều anh ơi! Anh chuẩn bị thi hội nào vậy?",
+    productIds: ["m2"],
+  },
+  {
+    keywords: ["lồng thái", "lồng đấu", "lồng vuông", "mua lồng"],
+    answer:
+      "Lồng Thái đang được anh em ưa chuộng nhất vì:\n\n" +
+      "✅ **Form vuông chuẩn thi** – giám khảo dễ chấm điểm\n" +
+      "✅ Chim di chuyển linh hoạt hơn lồng tròn\n" +
+      "✅ Gỗ trắc/gỗ mun bền, đẹp, sang trọng\n\n" +
+      "Hiện có 2 loại hot:\n" +
+      "- **Gỗ Trắc Nguyên Khối** – cao cấp nhất, chạm tay tinh xảo\n" +
+      "- **Gỗ Mun Form Vuông** – giá tốt hơn, vẫn chuẩn thi\n\n" +
+      "Anh đang nuôi chim bổi hay chim chiến để em tư vấn lồng phù hợp?",
+    productIds: ["l1", "l2"],
+  },
+  {
+    keywords: ["lồng tròn", "lồng tre", "lồng truyền thống"],
+    answer:
+      "Lồng tròn tre vàng thủ công là lựa chọn tuyệt vời cho:\n\n" +
+      "✅ Chim đang dưỡng hoặc chim mới về nhà\n" +
+      "✅ Trưng bày, trang trí\n" +
+      "✅ Nuôi dưỡng chim bổi quen người\n\n" +
+      "Lồng tre làng nghề thủ công, nan đều, sơn bóng đẹp, giá rất phải chăng anh ơi. " +
+      "Anh muốn tìm lồng để nuôi dưỡng hay để thi đấu?",
+    productIds: ["l3"],
+  },
+  {
+    keywords: ["cóng sứ", "cóng", "chén nước", "chén cám", "đồ đựng"],
+    answer:
+      "Cóng sứ Giang Tây vẽ tay là đồ chơi được anh em nghệ nhân chuộng nhất:\n\n" +
+      "✅ Sứ cao cấp, không thấm nước, dễ vệ sinh\n" +
+      "✅ Họa tiết chim cảnh vẽ tay tinh xảo – đẹp như tác phẩm nghệ thuật\n" +
+      "✅ Không ảnh hưởng mùi thức ăn như cóng nhựa\n\n" +
+      "Dùng cóng sứ chim ăn ngon miệng và sạch hơn nhiều anh ơi! Anh đang dùng cóng nhựa hay cóng sứ?",
+    productIds: ["c1"],
+  },
+  {
+    keywords: ["áo lồng", "bọc lồng", "che lồng", "stress", "vận chuyển"],
+    answer:
+      "Áo lồng vải thun lạnh 3D rất cần thiết anh ơi:\n\n" +
+      "✅ **Chống stress** khi vận chuyển đến hội thi\n" +
+      "✅ Giữ ấm cho chim vào mùa lạnh\n" +
+      "✅ Họa tiết Chào Mào 3D đẹp, độc lạ\n" +
+      "✅ Vải thun lạnh thoáng khí, không bí\n\n" +
+      "Bí quyết: luôn che áo lồng khi di chuyển, mở từ từ khi đến nơi để chim thích nghi. " +
+      "Anh hay đi thi xa không?",
+    productIds: ["h1"],
+  },
+];
+
+export function getSimpleResponse(query: string): SimpleResponse | null {
+  const q = query.toLowerCase();
+  for (const resp of SIMPLE_RESPONSES) {
+    if (resp.keywords.some((kw) => q.includes(kw))) {
+      return resp;
+    }
+  }
+  return null;
+}
+
 export const QUICK_QUESTIONS = [
   "Chim bị sình bụng thì dùng cám gì?",
   "Lồng Thái nào đang hot nhất hiện nay?",
