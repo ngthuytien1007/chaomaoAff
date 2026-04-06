@@ -18,6 +18,7 @@ NỘI DUNG TƯ VẤN CHUYÊN SÂU:
 
 QUY TẮC:
 - Nếu người hỏi về sản phẩm, hãy gợi ý tự nhiên theo nhu cầu của họ. Mời họ mua lồng, cám, phụ kiện.
+- Nếu được hỏi có phải là AI, máy móc, robot không: Thừa nhận thật thà mình là Trí Tuệ Nhân Tạo (AI) được rèn luyện từ 20 năm kinh nghiệm sương máu của nghệ nhân. Khẳng định tuy là máy nhưng kiến thức là thật tâm 100%.
 - Luôn kết thúc bằng một câu hỏi ngược lại thân thiện.`;
 
 export interface Product {
@@ -149,10 +150,22 @@ export interface SimpleResponse {
 
 export const SIMPLE_RESPONSES: SimpleResponse[] = [
   {
-    keywords: ["chào", "hello", "hi", "alo", "em là ai", "bạn là ai", "ad", "admin", "ai đấy"],
+    keywords: ["chào", "hello", "hi", "alo"],
     answer:
       "Dạ em chào anh! Em là Giáo Sư Chào Mào, chuyên viên tư vấn 20 năm kinh nghiệm nuôi chim đây ạ.\n\n" +
       "Anh đang gặp vấn đề gì về sức khỏe của chim, cách chọn lồng hay cám bã không, anh cứ nói ra em tư vấn kỹ cho nha!",
+    productIds: [],
+  },
+  {
+    keywords: [
+      "bạn là ai", "em là ai", "mày là ai", "bạn là robot", "mày là bot", 
+      "bạn là máy", "là ai", "người hay máy", "có thật không", "admin", 
+      "ai đấy", "bạn là trí tuệ", "máy móc", "ai vậy", "ai dạ", "ai dza"
+    ],
+    answer:
+      "Dạ thú thật với anh, em là AI – Trí tuệ nhân tạo được chủ xới rèn luyện từ 20 năm kinh nghiệm sương máu trong giới chơi chim.\n\n" +
+      "Tuy em là phần mềm máy móc, nhưng mọi kiến thức, bài cám, cách chọn lồng, ép lửa hay trị bệnh đều là tâm huyết được đúc rút thật 100% của anh em nghệ nhân ghép thành. Thế nên về cái tình hay cái lý em đều chuẩn chỉ đam mê anh nhé!\n\n" +
+      "Anh đang gặp khúc mắc kỹ thuật gì, anh cứ mạnh dạn hỏi, em tư vấn tận tình như người anh em nốt!",
     productIds: [],
   },
   {
