@@ -2,13 +2,58 @@ import Link from "next/link";
 import { Feather, Store, BookOpen, Bot } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { ALL_PRODUCTS } from "@/lib/constants";
+import type { Product } from "@/lib/constants";
 
 export const metadata = {
   title: "Cửa Hàng Đồ Nghề – Chào Mào AI",
   description: "Tuyển chọn các loại lồng chim, cám chim và phụ kiện chất lượng cao khuyên dùng bởi Chào Mào AI.",
 };
 
-export default function StorePage() {
+// Luôn render fresh từ server (không cache tĩnh)
+export const dynamic = "force-dynamic";
+
+async function getDbProducts(): Promise<Product[]> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceKey || supabaseUrl.includes('placeholder')) return [];
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const sb = createClient(supabaseUrl, serviceKey);
+
+    const { data, error } = await sb
+      .from('products')
+      .select('id, name, price, original_price, rating, image, affiliate_url, tags, category')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+
+    // Map DB columns → Product interface
+    return data.map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      price: row.price,
+      originalPrice: row.original_price ?? undefined,
+      rating: row.rating ?? 5.0,
+      image: row.image ?? '',
+      affiliate_url: row.affiliate_url ?? '',
+      tags: Array.isArray(row.tags) ? row.tags : [],
+      category: Array.isArray(row.category) ? row.category : [],
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function StorePage() {
+  const dbProducts = await getDbProducts();
+
+  // DB products trước (mới nhất), rồi đến sản phẩm tĩnh (tránh trùng id)
+  const dbIds = new Set(dbProducts.map((p) => p.id));
+  const staticProducts = ALL_PRODUCTS.filter((p) => !dbIds.has(p.id));
+  const allProducts = [...dbProducts, ...staticProducts];
+
   return (
     <div className="page-wrapper bg-gray-50 min-h-screen">
       {/* ===== HEADER ===== */}
@@ -53,7 +98,7 @@ export default function StorePage() {
           </div>
 
           <div className="products-grid mt-8">
-            {ALL_PRODUCTS.map((product) => (
+            {allProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
