@@ -583,9 +583,15 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
 ];
 
 export function getSimpleResponse(query: string): SimpleResponse | null {
-  const q = query.toLowerCase();
+  const checkMsg = query.toLowerCase();
   for (const resp of SIMPLE_RESPONSES) {
-    if (resp.keywords.some((kw) => q.includes(kw))) {
+    const safeMsg = checkMsg.replace(/chào mào/g, 'cm_bird');
+    
+    if (resp.keywords.some((kw) => {
+      if (kw === 'chào') return safeMsg.includes('chào');
+      if (kw === 'ai' || kw === 'a.i') return safeMsg.match(/\\bai\\b/i) !== null;
+      return checkMsg.includes(kw);
+    })) {
       return resp;
     }
   }

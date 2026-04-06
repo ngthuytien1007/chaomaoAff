@@ -28,18 +28,26 @@ export async function POST(req: NextRequest) {
         .select('keywords, answer, product_ids');
         
       if (!dbError && dbTemplates && dbTemplates.length > 0) {
-        const lowerMsg = lastUserMessage.toLowerCase();
+        const checkMsg = lastUserMessage.toLowerCase();
         for (const tmpl of dbTemplates) {
           if (!tmpl.keywords) continue;
-          // Chia cắt các từ khóa dip qua dấu phẩy
-          const kws = tmpl.keywords.split(',').map((k: string) => k.trim().toLowerCase());
           
-          if (kws.some((k: string) => k.length > 0 && lowerMsg.includes(k))) {
+          const kws = tmpl.keywords.split(',').map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+          
+          // Regex match để bắt chuẩn từ (Ví dụ: "chào" không được bắt trúng "chào mào")
+          // Khởi tạo regex bảo vệ chữ chào mào thành chữ cm tạm thời trong thông điệp để né chữ chào
+          const safeMsg = checkMsg.replace(/chào mào/g, 'cm_bird');
+          
+          if (kws.some((k: string) => {
+            if (k === 'chào') return safeMsg.includes('chào');
+            if (k === 'ai' || k === 'a.i') return safeMsg.match(/\\bai\\b/i) !== null;
+            return checkMsg.includes(k);
+          })) {
             answerFromTemplate = tmpl.answer;
             if (tmpl.product_ids) {
                templateProductIds = tmpl.product_ids.split(',').map((id: string) => id.trim());
             }
-            break; // Trúng 1 phát là ngưng quét luôn
+            break; 
           }
         }
       }
