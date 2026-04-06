@@ -226,11 +226,10 @@ export default function Home() {
             <br />
             Được phát triển bởi{" "}
             <Link
-              href="https://sportaiv.com"
-              target="_blank"
-              className="text-accent hover:underline"
+              href="/"
+              className="text-accent hover:underline font-medium"
             >
-              SPORTAIV.COM
+              CHÀO MÀO AI
             </Link>
           </p>
           <p className="footer-copy">

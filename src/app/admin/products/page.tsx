@@ -114,7 +114,7 @@ export default function AdminProductsPage() {
           <h1 className="text-3xl font-bold text-gray-900 border-b pb-4 border-gray-200">
             Đăng Sản Phẩm Affiliate
           </h1>
-          <p className="text-gray-500 mt-2 text-sm">Hệ thống xài ổ cứng mây Supabase vĩnh viễn</p>
+          <p className="text-gray-500 mt-2 text-sm">Hệ thống Quản Trị Affiliate & Cloud Storage</p>
         </div>
 
         {message.text && (
@@ -174,10 +174,10 @@ export default function AdminProductsPage() {
                   required
                 />
                 {!imageFile ? (
-                   <div className="text-gray-500">
-                      <span className="text-3xl block mb-2">📸</span>
-                      Bấm vào đây để chọn ảnh từ máy
-                   </div>
+                    <div className="text-gray-500">
+                       <span className="text-3xl block mb-2">📸</span>
+                       Bấm vào đây để chọn ảnh từ máy
+                    </div>
                 ) : (
                   <div className="text-green-600 font-semibold flex items-center gap-2">
                     ✅ Đã chọn ảnh: {imageFile.name}

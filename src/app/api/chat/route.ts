@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      return NextResponse.json({ error: "Yêu cầu không hợp lệ anh ơi!" }, { status: 400 });
     }
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";

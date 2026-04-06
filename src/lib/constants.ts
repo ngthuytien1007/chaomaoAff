@@ -163,9 +163,9 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "ai đấy", "bạn là trí tuệ", "máy móc", "ai vậy", "ai dạ", "ai dza"
     ],
     answer:
-      "Dạ thú thật với anh, em là AI – Trí tuệ nhân tạo được chủ xới rèn luyện từ 20 năm kinh nghiệm sương máu trong giới chơi chim.\n\n" +
+      "Dạ thú thật với anh, em là AI – Trí tuệ nhân tạo được đội ngũ nghệ nhân rèn luyện từ 20 năm kinh nghiệm xương máu trong giới chơi chim.\n\n" +
       "Tuy em là phần mềm máy móc, nhưng mọi kiến thức, bài cám, cách chọn lồng, ép lửa hay trị bệnh đều là tâm huyết được đúc rút thật 100% của anh em nghệ nhân ghép thành. Thế nên về cái tình hay cái lý em đều chuẩn chỉ đam mê anh nhé!\n\n" +
-      "Anh đang gặp khúc mắc kỹ thuật gì, anh cứ mạnh dạn hỏi, em tư vấn tận tình như người anh em nốt!",
+      "Dạ anh đang gặp khúc mắc kỹ thuật gì, anh cứ mạnh dạn hỏi, em tư vấn tận tình như người anh em nốt ạ!",
     productIds: [],
   },
   {
@@ -240,7 +240,7 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "Hiện có 2 loại hot:\n" +
       "- **Gỗ Trắc Nguyên Khối** – cao cấp nhất, chạm tay tinh xảo\n" +
       "- **Gỗ Mun Form Vuông** – giá tốt hơn, vẫn chuẩn thi\n\n" +
-      "Anh đang nuôi chim bổi hay chim chiến để em tư vấn lồng phù hợp?",
+      "Dạ anh đang nuôi chim bổi hay chim chiến để em tư vấn lồng phù hợp ạ?",
     productIds: ["l1", "l2"],
   },
   {
@@ -485,7 +485,8 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "1. Cào cào non xanh: Dùng hằng ngày quanh năm (20-30 con/ngày chim lông lá mượt cực).\n" +
       "2. Sâu rồng/sâu gạo: Dùng duy nhất khi ốm hoặc trước đi thi 2 ngày kích lửa nhanh.\n" +
       "3. Trứng kiến: Thuốc tiên khi thay lông mùa hè thu.\n\n" +
-      "Đóng Combo Cám ngũ cốc cân bằng lại chim cực khỏe luôn anh!\nAnh dùng sâu hay cào cào là chính?",
+      "Dạ anh nên dùng thêm Combo Cám ngũ cốc để cân bằng lại, chim sẽ cực khỏe luôn ạ!\n" +
+      "Dạ hiện tại anh đang dùng sâu hay cào cào là chính cho chim vậy ạ?",
     productIds: ["m2", "m3"],
   },
   {
@@ -506,7 +507,7 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "1. Canxi và nguyên tố vi lượng cám anh dùng đang rất hụt. Đổi ngay cám ngũ cốc dinh dưỡng đủ chất.\n" +
       "2. Chim thiếu chất đất khoáng nhặt ở ngoài tự nhiên. Trộn thêm nang mực giã tơi vô bột cám.\n" +
       "3. Bỏ túi chanh sả hoặc sáp thơm sát xuống mâm vớt lồng tránh chim mổ.\n\n" +
-      "Anh mua Cám Dưỡng thay lại cám loại cũ đi, cám kia có khi cám để quá hạn đó?",
+      "Dạ bác thử xem lại phân chim giúp em có màu lạ không ạ? Anh nên cân nhắc dùng Cám Dưỡng để thay lại loại cám cũ xem sao, có khi cám cũ đang không thực sự phù hợp hoặc bị quá hạn rồi đó ạ.",
     productIds: ["m1", "m3"],
   },
   {
@@ -525,8 +526,8 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "Quan điểm Giáo sư là không nhồi nhét hoá học thuốc Tây vào bé hạt tiêu:\n\n" +
       "1. Dùng khi và chỉ khi mệt rớt lửa phờ phạt tiêu chảy nướt trâu.\n" +
       "2. Bổ sung dưỡng chất tự nhiên đỉnh nhất: Nhộng ong tằm mỡ, trứng kiến già, bột cào cào rang sấy.\n" +
-      "3. Đóng cám chuẩn tỷ lệ dinh dưỡn như Cám Mát hay Cám Đấu đã hòa quyện các men vi sinh tự nhiên rồi.\n\n" +
-      "Anh tính vực chim lên lửa hay là chữa suy nhược thế?",
+      "3. Dạ anh nên dùng cám chuẩn tỷ lệ dinh dưỡng như Cám Mát hay Cám Đấu đã hòa quyện các men vi sinh tự nhiên rồi ạ.\n\n" +
+      "Dạ anh đang tính vực chim lên lửa hay là muốn chữa suy nhược thế ạ?",
     productIds: ["m1", "m2"],
   },
   {
@@ -546,8 +547,8 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "Sụp lửa, tụt form điếc ngòi do xách đi áp dàn sai cách:\n\n" +
       "1. Cách dưỡng lại tâm trí: Trùm áo lồng 2/3 diện tích che kín.\n" +
       "2. Đừng mang ra hóng dàn đấu của người ta nữa, chỉ mở áo hé 1 tí dưới sàn đất.\n" +
-      "3. Tọng thêm mồi thơm như bột sâu sấy, chùm ruột mật ong. Sau 1 tháng tự dưng sổ bọng bung bung.\n\n" +
-      "Anh đang ấp em nó ở cám mát hay cám đấu vậy, phải nhồi lại cám đấu nha?",
+      "3. Dạ anh nên bổ sung thêm mồi thơm như bột sâu sấy, chùm ruột mật ong. Sau khoảng 1 tháng chăm kỹ thì chim sẽ tự dưng sổ bọng bung đều lại ạ.\n\n" +
+      "Dạ anh đang ấp em nó ở cám mát hay cám đấu vậy ạ, nếu chim ổn rồi thì mình nên nhồi lại cám đấu nha anh.",
     productIds: ["m2", "h1"],
   },
   {
@@ -556,8 +557,8 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
       "Chào Mào đứng cục lủn xù lông là báo động đỏ sức khỏe rồi nha anh:\n\n" +
       "1. Đổi ngay chỗ treo lồng, chim đang lạnh hoặc trúng gió, dùng dầu tràm quẹt nhẹ 1 xíu vô cóng nước nhỏ.\n" +
       "2. Rút cám Đấu, chỉ vào nhẹ Cám Mát Cám tơ hạt nhuyễn.\n" +
-      "3. Luộc nước ổi non cho chim uống để thanh tẩy đường rượt lủng.\n\n" +
-      "Kéo kín khóa áo lồng giữ độ ấp áp trong thân nhiệt ngay nhe anh, anh xem rớt cục phân nào màu nhớt không?",
+      "3. Dạ anh hãy luộc nước ổi non cho chim uống để thanh tẩy đường ruột giúp em nhé ạ.\n\n" +
+      "Dạ anh nên kéo kín khóa áo lồng để giữ độ ấm áp cho thân nhiệt chim ngay nhé. Anh xem giúp em dưới bố lồng có rớt cục phân nào màu nhớt không ạ?",
     productIds: ["m1", "h1"],
   },
   {
@@ -589,7 +590,7 @@ export function getSimpleResponse(query: string): SimpleResponse | null {
     
     if (resp.keywords.some((kw) => {
       if (kw === 'chào') return safeMsg.includes('chào');
-      if (kw === 'ai' || kw === 'a.i') return safeMsg.match(/\\bai\\b/i) !== null;
+      if (kw === 'ai' || kw === 'a.i') return /\bai\b/i.test(safeMsg);
       return checkMsg.includes(kw);
     })) {
       return resp;

@@ -117,11 +117,10 @@ export default async function StorePage() {
             <br />
             Được phát triển bởi{" "}
             <Link
-              href="https://sportaiv.com"
-              target="_blank"
+              href="/"
               className="text-accent hover:underline font-medium"
             >
-              SPORTAIV.COM
+              CHÀO MÀO AI
             </Link>
           </p>
           <p className="footer-copy text-sm text-gray-400">

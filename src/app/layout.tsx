@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     "AI chim cảnh",
     "chào mào thi đấu",
   ],
-  authors: [{ name: "SPORTAIV.COM" }],
+  authors: [{ name: "Chào Mào AI Team" }],
   openGraph: {
     title: "Chào Mào AI – Chuyên Gia Tư Vấn Chim Cảnh",
     description: "Hỏi đáp miễn phí với AI nghệ nhân chào mào 20 năm kinh nghiệm",

@@ -78,7 +78,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           >
             <span className="product-card-recommend-badge">
               <Zap size={10} />
-              AI Recommend
+              AI Khuyên Dùng
             </span>
             <Image
               src={product.image}
