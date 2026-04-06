@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ProductCard } from "@/components/ProductCard";
+import type { Product } from "@/lib/constants";
 
 export default function AdminProductsPage() {
 
@@ -17,10 +19,38 @@ export default function AdminProductsPage() {
   const [category, setCategory] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  // New product preview after creation
+  const [newProduct, setNewProduct] = useState<Product | null>(null);
+  // List of all products for this admin
+  const [myProducts, setMyProducts] = useState<Product[]>([]);
+  const [listLoading, setListLoading] = useState(false);
+  const [listError, setListError] = useState("");
+
+  const fetchMyProducts = async () => {
+    setListLoading(true);
+    setListError("");
+    try {
+      const res = await fetch("/api/admin/products", { method: "GET" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Lỗi không xác định");
+      setMyProducts(data.products || []);
+    } catch (e: any) {
+      setListError(e.message);
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Load admin's products on component mount
+    fetchMyProducts();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ text: "", type: "" });
+    setNewProduct(null);
 
     if (!imageFile) {
       setMessage({ text: "Anh chưa chọn ảnh sản phẩm ạ!", type: "error" });
@@ -60,8 +90,13 @@ export default function AdminProductsPage() {
         throw new Error(data.error || "Lỗi không xác định");
       }
 
-      setMessage({ text: data.message + " (Ghi nhớ F5 trang chủ để xem cập nhật)", type: "success" });
+      // API now returns the full product record
+      setNewProduct(data.product);
+      setMessage({ text: data.message || "Đăng sản phẩm thành công!", type: "success" });
       
+      // Refresh the product list
+      fetchMyProducts();
+
       // Clear form
       setName(""); setPrice(""); setOriginalPrice(""); setAffiliateUrl(""); setTags(""); setCategory(""); setImageFile(null);
       
@@ -83,8 +118,16 @@ export default function AdminProductsPage() {
         </div>
 
         {message.text && (
-          <div className={`p-4 mb-6 rounded-lg font-medium \${message.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+          <div className={`p-4 mb-6 rounded-lg font-medium ${message.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
             {message.type === 'error' ? '❌' : '✅'} {message.text}
+          </div>
+        )}
+
+        {/* New product preview */}
+        {newProduct && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Sản phẩm vừa tạo</h2>
+            <ProductCard product={newProduct} />
           </div>
         )}
 
@@ -152,6 +195,19 @@ export default function AdminProductsPage() {
             {loading ? "🚀 Đang up hình lên mây..." : "ĐĂNG SẢN PHẨM LÊN HỆ THỐNG"}
           </button>
         </form>
+
+        {/* Admin's product list */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-semibold mb-4">Sản phẩm của tôi</h2>
+          {listLoading && <p>Đang tải danh sách...</p>}
+          {listError && <p className="text-red-600">{listError}</p>}
+          {!listLoading && myProducts.length === 0 && <p>Chưa có sản phẩm nào.</p>}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myProducts.map(p => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
