@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase"; // Use generic client for insert ops
+import { createClient } from "@/utils/supabase/server";
 import crypto from "crypto";
-
-// Lấy mã Passcode từ biến môi trường, hoặc dùng mặc định
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || "ThongNguyen999";
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const passcode = formData.get("passcode") as string;
+    // 1. Kiểm tra rào chắn bảo mật bằng Xác Thực Thực Thụ (Supabase Auth)
+    const supabaseAuth = await createClient()
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
 
-    // 1. Kiểm tra rào chắn bảo mật
-    if (passcode !== ADMIN_PASSCODE) {
-      return NextResponse.json({ error: "Thưa anh, sai mã bí mật rồi ạ!" }, { status: 401 });
+    if (!user || authError) {
+      return NextResponse.json({ error: "Chưa đăng nhập! Anh không có quyền truy cập." }, { status: 401 });
     }
+
+    const formData = await req.formData();
 
     // 2. Trích xuất dữ liệu cơ bản
     const id = formData.get("id") as string || `p_${Date.now()}`;

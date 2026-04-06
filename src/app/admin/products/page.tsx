@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function AdminProductsPage() {
-  const [passcode, setPasscode] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
   
@@ -30,7 +30,7 @@ export default function AdminProductsPage() {
 
     try {
       const formData = new FormData();
-      formData.append("passcode", passcode);
+
       
       // Auto sinh ID ngẫu nhiên ví dụ m_xyz
       formData.append("id", "p_" + Math.random().toString(36).substring(2, 9));
@@ -89,18 +89,6 @@ export default function AdminProductsPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 mb-6">
-            <label className="block text-sm font-bold text-orange-800 mb-1">Mã Nhận Diện Admin *</label>
-            <input 
-              type="password" 
-              value={passcode} 
-              onChange={(e)=>setPasscode(e.target.value)} 
-              className="w-full p-2 border border-orange-300 rounded focus:ring-2 focus:ring-orange-500 outline-none"
-              placeholder="Nhập mã bí mật..."
-              required
-            />
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold mb-1">Tên Sản Phẩm *</label>
@@ -159,7 +147,7 @@ export default function AdminProductsPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className={\`w-full py-4 mt-6 rounded-xl text-white font-bold text-lg shadow-lg transition-transform active:scale-95 \${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-xl'}\`}
+            className={`w-full py-4 mt-6 rounded-xl text-white font-bold text-lg shadow-lg transition-transform active:scale-95 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-xl'}`}
           >
             {loading ? "🚀 Đang up hình lên mây..." : "ĐĂNG SẢN PHẨM LÊN HỆ THỐNG"}
           </button>
