@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SYSTEM_PROMPT, ALL_PRODUCTS, getRelatedProducts, getSimpleResponse } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
+import type { Product } from "@/lib/constants";
 
 // Model miễn phí cho câu hỏi phức tạp (không có template)
 const FREE_MODEL = "openrouter/free";
@@ -16,6 +17,37 @@ export async function POST(req: NextRequest) {
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
     const sessionId = req.headers.get('x-sportaiv-sid');
+
+    // ── Bước 0: Load sản phẩm từ DB (để gợi ý sản phẩm mới nhất) ─────────
+    let dbProducts: Product[] = [];
+    try {
+      const { data: dbProdRows } = await supabase
+        .from('products')
+        .select('id, name, price, original_price, rating, image, affiliate_url, tags, category')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      if (dbProdRows) {
+        dbProducts = dbProdRows.map((row: any) => ({
+          id: row.id,
+          name: row.name,
+          price: row.price,
+          originalPrice: row.original_price ?? undefined,
+          rating: row.rating ?? 5.0,
+          image: row.image ?? '',
+          affiliate_url: row.affiliate_url ?? '',
+          tags: Array.isArray(row.tags) ? row.tags : [],
+          category: Array.isArray(row.category) ? row.category : [],
+        }));
+      }
+    } catch {
+      // Fallback to static products
+    }
+    // Merge: DB products first (newest), then static (no duplicates)
+    const dbIds = new Set(dbProducts.map((p) => p.id));
+    const allAvailableProducts: Product[] = [
+      ...dbProducts,
+      ...ALL_PRODUCTS.filter((p) => !dbIds.has(p.id)),
+    ];
 
     // ── Bước 1: Kiểm tra câu hỏi đơn giản (có template sẵn) ──────────────
     let answerFromTemplate: string | null = null;
@@ -34,13 +66,13 @@ export async function POST(req: NextRequest) {
           
           const kws = tmpl.keywords.split(',').map((k: string) => k.trim().toLowerCase()).filter(Boolean);
           
-          // Regex match để bắt chuẩn từ (Ví dụ: "chào" không được bắt trúng "chào mào")
-          // Khởi tạo regex bảo vệ chữ chào mào thành chữ cm tạm thời trong thông điệp để né chữ chào
+          // Bảo vệ từ "chào mào" không bị match nhầm với "chào"
           const safeMsg = checkMsg.replace(/chào mào/g, 'cm_bird');
           
           if (kws.some((k: string) => {
             if (k === 'chào') return safeMsg.includes('chào');
-            if (k === 'ai' || k === 'a.i') return safeMsg.match(/\\bai\\b/i) !== null;
+            // FIX: regex escape đúng - dùng literal regex, không escape kép
+            if (k === 'ai' || k === 'a.i') return /\bai\b/i.test(safeMsg);
             return checkMsg.includes(k);
           })) {
             answerFromTemplate = tmpl.answer;
@@ -66,7 +98,8 @@ export async function POST(req: NextRequest) {
 
     if (answerFromTemplate) {
       // Trả lời từ template, KHÔNG gọi AI → miễn phí 100%
-      const suggestedProducts = ALL_PRODUCTS.filter((p) =>
+      // Tìm trong cả DB products lẫn static products
+      const suggestedProducts = allAvailableProducts.filter((p) =>
         templateProductIds.includes(p.id)
       );
 
@@ -144,7 +177,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const suggestedProducts = getRelatedProducts(lastUserMessage);
+    // Gợi ý sản phẩm từ pool đầy đủ (DB + static)
+    const q = lastUserMessage.toLowerCase();
+    const scored = allAvailableProducts.map((p) => {
+      const score = p.category.filter((cat) => q.includes(cat)).length;
+      return { ...p, score };
+    });
+    const suggestedProducts = scored
+      .filter((p) => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
 
     return NextResponse.json({ answer: aiAnswer, suggestedProducts });
   } catch (error) {

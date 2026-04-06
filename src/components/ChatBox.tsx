@@ -236,7 +236,7 @@ export function ChatBox() {
             <div className="msg-bubble-ai typing-indicator-bubble">
               <span className="typing-label">Giáo Sư đang nhập</span>
               <div className="dot-typing">
-                <span />1
+                <span />
                 <span />
                 <span />
               </div>
