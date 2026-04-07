@@ -1,8 +1,12 @@
 // src/app/api/chat/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { SYSTEM_PROMPT, ALL_PRODUCTS, getRelatedProducts, getSimpleResponse } from "@/lib/constants";
+import { cookies } from "next/headers";
+import { SYSTEM_PROMPT, ALL_PRODUCTS, getSimpleResponse } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import type { Product } from "@/lib/constants";
+
+// Giới hạn lịch sử gửi lên AI để tránh token overflow
+const MAX_HISTORY_MESSAGES = 10;
 
 // Model miễn phí cho câu hỏi phức tạp (không có template)
 const FREE_MODEL = "openrouter/free";
@@ -16,7 +20,15 @@ export async function POST(req: NextRequest) {
     }
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
-    const sessionId = req.headers.get('x-sportaiv-sid');
+
+    // Đọc session_id từ cookie (middleware đã set sẵn) thay vì header từ frontend
+    const cookieStore = await cookies();
+    const sessionId = cookieStore.get('sportaiv_sid')?.value ||
+                      req.headers.get('x-sportaiv-sid') ||
+                      null;
+
+    // Chỉ giữ N messages gần nhất để tránh vượt token limit
+    const trimmedMessages = messages.slice(-MAX_HISTORY_MESSAGES);
 
     // ── Bước 0: Load sản phẩm từ DB (để gợi ý sản phẩm mới nhất) ─────────
     let dbProducts: Product[] = [];
@@ -134,7 +146,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: FREE_MODEL,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...trimmedMessages],
         max_tokens: 512,
         temperature: 0.7,
       }),
