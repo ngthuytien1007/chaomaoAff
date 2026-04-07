@@ -170,12 +170,14 @@ const NO_DIACRITICS_RESPONSE =
 
 function isVietnameseWithoutDiacritics(text: string): boolean {
   const words = text.trim().split(/\s+/);
-  // Chỉ kiểm tra nếu câu đủ dài (có ngữ cảnh)
-  if (words.length < 4) return false;
 
-  // Loại bỏ các từ viết tắt hợp lệ, chỉ đếm các từ "thật"
-  const realWords = words.filter((w) => !ALLOWED_ABBREVIATIONS.has(w.toLowerCase()));
-  if (realWords.length < 3) return false;
+  // Loại bỏ các từ viết tắt hợp lệ và số, chỉ đếm các từ "thật"
+  const realWords = words.filter((w) =>
+    !ALLOWED_ABBREVIATIONS.has(w.toLowerCase()) && !/^\d+$/.test(w)
+  );
+
+  // Chỉ kiểm tra nếu có ít nhất 2 từ thật (bắt cả "long moi", "chim boi"...)
+  if (realWords.length < 2) return false;
 
   // Nếu không có bất kỳ dấu tiếng Việt nào → coi là viết không dấu
   return !VIETNAMESE_DIACRITICS_REGEX.test(text);
@@ -285,36 +287,62 @@ export async function POST(req: NextRequest) {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // TIER 1: Quick keyword match (miễn phí, instant)
-    // Dành cho các câu rõ ràng: chào, cảm ơn, bạn là ai...
+    // BƯỚC 1: AI HIỂU NGỮ CẢNH → EXTRACT KEYWORDS
+    // AI đọc câu hỏi và trích xuất từ khóa chuyên môn chuẩn tiếng Việt
+    // VD: "lồng gì cho chim bỗi 2 tháng nhác"
+    //   → ["thuần bổi", "bổi nhát", "chim bổi", "lồng"]
+    // ══════════════════════════════════════════════════════════════════════
+    const aiKeywords = await extractKeywords(lastUserMessage);
+    console.log("🔍 AI extracted keywords:", aiKeywords);
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BƯỚC 2: TÌM TEMPLATE BẰNG KEYWORDS VỪA EXTRACT
+    // Tìm trong DB trước, rồi mới tìm trong static constants
     // ══════════════════════════════════════════════════════════════════════
     let answerFromTemplate: string | null = null;
     let templateProductIds: string[] = [];
 
-    // 1.A: Quét DB templates
-    for (const tmpl of dbTemplates) {
-      if (!tmpl.keywords) continue;
-      const kws = tmpl.keywords.split(',').map((k: string) => k.trim().toLowerCase()).filter(Boolean);
-      const checkMsg = lastUserMessage.toLowerCase();
-      if (kws.some((k: string) => matchKeyword(checkMsg, k))) {
-        answerFromTemplate = tmpl.answer;
-        if (tmpl.product_ids) {
-          templateProductIds = tmpl.product_ids.split(',').map((id: string) => id.trim());
+    if (aiKeywords.length > 0) {
+      // 2.A: Tìm trong DB templates bằng AI keywords
+      const templateMatch = searchTemplatesByKeywords(
+        aiKeywords,
+        dbTemplates,
+        SIMPLE_RESPONSES
+      );
+
+      if (templateMatch) {
+        console.log(`✅ Template matched (score=${templateMatch.score})`);
+        answerFromTemplate = templateMatch.answer;
+        templateProductIds = templateMatch.productIds;
+      }
+
+      // 2.B: Nếu AI keywords không match → thử quick keyword match trực tiếp
+      // (cho các câu cực ngắn như "chào", "ok", "cảm ơn")
+      if (!answerFromTemplate) {
+        const checkMsg = lastUserMessage.toLowerCase();
+        for (const tmpl of dbTemplates) {
+          if (!tmpl.keywords) continue;
+          const kws = tmpl.keywords.split(',').map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+          if (kws.some((k: string) => matchKeyword(checkMsg, k))) {
+            answerFromTemplate = tmpl.answer;
+            if (tmpl.product_ids) {
+              templateProductIds = tmpl.product_ids.split(',').map((id: string) => id.trim());
+            }
+            break;
+          }
         }
-        break;
+      }
+
+      if (!answerFromTemplate) {
+        const simpleResp = getSimpleResponse(lastUserMessage);
+        if (simpleResp) {
+          answerFromTemplate = simpleResp.answer;
+          templateProductIds = simpleResp.productIds;
+        }
       }
     }
 
-    // 1.B: Quét static templates
-    if (!answerFromTemplate) {
-      const simpleResp = getSimpleResponse(lastUserMessage);
-      if (simpleResp) {
-        answerFromTemplate = simpleResp.answer;
-        templateProductIds = simpleResp.productIds;
-      }
-    }
-
-    // Nếu Tier 1 match → trả ngay (0 API call)
+    // Tìm thấy template → trả ngay
     if (answerFromTemplate) {
       const suggestedProducts = allAvailableProducts.filter((p) =>
         templateProductIds.includes(p.id)
@@ -323,34 +351,6 @@ export async function POST(req: NextRequest) {
         await saveChatHistory(sessionId, lastUserMessage, answerFromTemplate, 0);
       }
       return NextResponse.json({ answer: answerFromTemplate, suggestedProducts });
-    }
-
-    // ══════════════════════════════════════════════════════════════════════
-    // TIER 2: AI hiểu ngữ cảnh → extract keywords → tìm template
-    // Ví dụ: "lồng gì cho chim bỗi 2 tháng nhác"
-    //   → AI extract: ["thuần bổi", "bổi nhát", "chim bổi", "lồng"]
-    //   → Match template "thuần bổi" → trả template thay vì gọi AI sinh
-    // ══════════════════════════════════════════════════════════════════════
-    const aiKeywords = await extractKeywords(lastUserMessage);
-    console.log("🔍 AI extracted keywords:", aiKeywords);
-
-    if (aiKeywords.length > 0) {
-      const templateMatch = searchTemplatesByKeywords(
-        aiKeywords,
-        dbTemplates,
-        SIMPLE_RESPONSES
-      );
-
-      if (templateMatch) {
-        console.log(`✅ Template matched (score=${templateMatch.score}):`, templateMatch.answer.substring(0, 50) + "...");
-        const suggestedProducts = allAvailableProducts.filter((p) =>
-          templateMatch.productIds.includes(p.id)
-        );
-        if (sessionId) {
-          await saveChatHistory(sessionId, lastUserMessage, templateMatch.answer, 0);
-        }
-        return NextResponse.json({ answer: templateMatch.answer, suggestedProducts });
-      }
     }
 
     // ══════════════════════════════════════════════════════════════════════
