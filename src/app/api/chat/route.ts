@@ -152,6 +152,35 @@ async function saveChatHistory(
   }
 }
 
+// ─── Helper: Kiểm tra tiếng Việt có dấu ─────────────────────────────────────
+const ALLOWED_ABBREVIATIONS = new Set([
+  // Viết tắt thông dụng cho phép
+  'ko', 'k', 'dc', 'đc', 'j', 'z', 'g', 'ntn', 'bt', 'tl', 'vs', 'vd',
+  'ok', 'hi', 'alo', 'sp', 'ad', 'mn', 'ae', 'ck', 'tk', 'vip',
+  'cm', 'fb', 'ib', 'pm', 'rep', 'shop', 'acc', 'oki', 'tks', 'thanks',
+]);
+
+const VIETNAMESE_DIACRITICS_REGEX = /[àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i;
+
+const NO_DIACRITICS_RESPONSE =
+  "Dạ anh ơi, em đọc chữ không dấu hơi khó hiểu đúng ý anh lắm 😅\n\n" +
+  "Anh gõ tiếng Việt **có dấu** giúp em nhé, em sẽ tư vấn chính xác hơn cho anh!\n\n" +
+  "Ví dụ: \"chim bị sình bụng\" thay vì \"chim bi sinh bung\"\n\n" +
+  "*(Mấy từ viết tắt như ko, dc, j, ntn... thì em hiểu được anh nhé!)*";
+
+function isVietnameseWithoutDiacritics(text: string): boolean {
+  const words = text.trim().split(/\s+/);
+  // Chỉ kiểm tra nếu câu đủ dài (có ngữ cảnh)
+  if (words.length < 4) return false;
+
+  // Loại bỏ các từ viết tắt hợp lệ, chỉ đếm các từ "thật"
+  const realWords = words.filter((w) => !ALLOWED_ABBREVIATIONS.has(w.toLowerCase()));
+  if (realWords.length < 3) return false;
+
+  // Nếu không có bất kỳ dấu tiếng Việt nào → coi là viết không dấu
+  return !VIETNAMESE_DIACRITICS_REGEX.test(text);
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // MAIN HANDLER
 // ══════════════════════════════════════════════════════════════════════════════
@@ -164,6 +193,14 @@ export async function POST(req: NextRequest) {
     }
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
+
+    // ── Kiểm tra tiếng Việt có dấu ──────────────────────────────────────
+    if (isVietnameseWithoutDiacritics(lastUserMessage)) {
+      return NextResponse.json({
+        answer: NO_DIACRITICS_RESPONSE,
+        suggestedProducts: [],
+      });
+    }
 
     // Đọc session_id từ cookie (middleware đã set sẵn)
     const cookieStore = await cookies();
