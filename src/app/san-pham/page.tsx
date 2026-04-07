@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 async function getDbProducts(): Promise<Product[]> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!supabaseUrl || !serviceKey || supabaseUrl.includes('placeholder')) return [];
 
     const { createClient } = await import('@supabase/supabase-js');

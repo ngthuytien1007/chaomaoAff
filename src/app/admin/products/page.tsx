@@ -40,6 +40,8 @@ export default function AdminProductsPage() {
 
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
+        if (res.status === 413) throw new Error("Ảnh quá lớn, anh chọn ảnh dưới 2MB nhé!");
+        if (res.status >= 400) throw new Error(`Lỗi hệ thống (${res.status}). Xin báo kỹ thuật viên.`);
         window.location.href = "/auth/login";
         return;
       }
@@ -116,6 +118,8 @@ export default function AdminProductsPage() {
       }
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
+        if (res.status === 413) throw new Error("Ảnh tải lên quá lớn, anh thử ảnh nhẹ hơn dưới 2MB nhé!");
+        if (res.status >= 400) throw new Error(`Lỗi tải lên (${res.status}). Hãy báo lại kỹ thuật viên.`);
         window.location.href = "/auth/login";
         return;
       }
