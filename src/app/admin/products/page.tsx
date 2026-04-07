@@ -38,15 +38,27 @@ export default function AdminProductsPage() {
         return;
       }
 
-      // Kiểm tra response có phải JSON không (tránh parse HTML)
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
-        throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        window.location.href = "/auth/login";
+        return;
       }
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Lỗi không xác định");
-      setMyProducts(data.products || []);
+      
+      const mappedProducts = (data.products || []).map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        price: row.price,
+        originalPrice: row.original_price ?? undefined,
+        rating: row.rating ?? 5.0,
+        image: row.image || row.image_url || '',
+        affiliate_url: row.affiliate_url ?? '',
+        tags: Array.isArray(row.tags) ? row.tags : [],
+        category: Array.isArray(row.category) ? row.category : [],
+      }));
+      setMyProducts(mappedProducts);
     } catch (e: any) {
       setListError(e.message);
     } finally {
@@ -104,7 +116,8 @@ export default function AdminProductsPage() {
       }
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
-        throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        window.location.href = "/auth/login";
+        return;
       }
 
       const data = await res.json();
@@ -114,7 +127,19 @@ export default function AdminProductsPage() {
       }
 
       // API now returns the full product record
-      setNewProduct(data.product);
+      const p = data.product;
+      const mappedProduct = {
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        originalPrice: p.original_price ?? undefined,
+        rating: p.rating ?? 5.0,
+        image: p.image || p.image_url || '',
+        affiliate_url: p.affiliate_url ?? '',
+        tags: Array.isArray(p.tags) ? p.tags : [],
+        category: Array.isArray(p.category) ? p.category : [],
+      };
+      setNewProduct(mappedProduct);
       setMessage({ text: data.message || "Đăng sản phẩm thành công!", type: "success" });
       
       // Refresh the product list

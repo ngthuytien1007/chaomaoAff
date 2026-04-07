@@ -41,7 +41,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
             onClick={() => setIsModalOpen(true)}
           >
             <Image
-              src={product.image}
+              src={product.image || '/images/placeholder.jpg'}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -58,7 +58,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
             </h4>
             <p className="product-card-compact-price">{product.price}</p>
             <Link
-              href={product.affiliate_url}
+              href={product.affiliate_url || '#'}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleAffiliateClick}
@@ -81,7 +81,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
               AI Khuyên Dùng
             </span>
             <Image
-              src={product.image}
+              src={product.image || '/images/placeholder.jpg'}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700 ease-out"
@@ -94,7 +94,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           <div className="product-card-body flex flex-col flex-1">
             {/* Tags */}
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {product.tags.map((tag) => (
+              {(Array.isArray(product.tags) ? product.tags : []).map((tag) => (
                 <span key={tag} className="product-tag">
                   {tag}
                 </span>
@@ -140,7 +140,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
             {/* CTA */}
             <Link
-              href={product.affiliate_url}
+              href={product.affiliate_url || '#'}
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleAffiliateClick}
@@ -174,7 +174,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
             {/* Image Section */}
             <div className="w-full md:w-1/2 relative bg-gray-50 h-64 md:h-auto min-h-[300px]">
               <Image
-                src={product.image}
+                src={product.image || '/images/placeholder.jpg'}
                 alt={product.name}
                 fill
                 className="object-contain p-4"
@@ -185,7 +185,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
             {/* Info Section */}
             <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
               <div className="flex flex-wrap gap-2 mb-3">
-                {product.tags.map((tag) => (
+                {(Array.isArray(product.tags) ? product.tags : []).map((tag) => (
                   <span key={tag} className="bg-accent/10 text-accent-dark px-2.5 py-1 rounded-md text-xs font-semibold">
                     {tag}
                   </span>
@@ -242,7 +242,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
               </div>
 
               <Link
-                href={product.affiliate_url}
+                href={product.affiliate_url || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleAffiliateClick}
