@@ -569,16 +569,31 @@ export const SIMPLE_RESPONSES: SimpleResponse[] = [
   }
 ];
 
+/**
+ * Kiểm tra keyword có khớp trong message không.
+ * Keyword ngắn (≤3 ký tự) phải khớp nguyên từ (word boundary)
+ * để tránh "hi" match nhầm bên trong "chim", "ok" trong "không", v.v.
+ */
+export function matchKeyword(message: string, keyword: string): boolean {
+  if (keyword === 'chào') {
+    const safeMsg = message.replace(/chào mào/g, 'cm_bird');
+    return safeMsg.includes('chào');
+  }
+  if (keyword === 'ai' || keyword === 'a.i') {
+    return /\bai\b/i.test(message);
+  }
+  // Keyword ngắn → yêu cầu word boundary để tránh match nhầm
+  if (keyword.length <= 3) {
+    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(?:^|\\s|[,;!?.])${escaped}(?:$|\\s|[,;!?.])`, 'i').test(message);
+  }
+  return message.includes(keyword);
+}
+
 export function getSimpleResponse(query: string): SimpleResponse | null {
   const checkMsg = query.toLowerCase();
   for (const resp of SIMPLE_RESPONSES) {
-    const safeMsg = checkMsg.replace(/chào mào/g, 'cm_bird');
-    
-    if (resp.keywords.some((kw) => {
-      if (kw === 'chào') return safeMsg.includes('chào');
-      if (kw === 'ai' || kw === 'a.i') return /\bai\b/i.test(safeMsg);
-      return checkMsg.includes(kw);
-    })) {
+    if (resp.keywords.some((kw) => matchKeyword(checkMsg, kw))) {
       return resp;
     }
   }
