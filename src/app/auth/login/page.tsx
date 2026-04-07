@@ -24,7 +24,14 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setError("Sai tài khoản hoặc mật khẩu rồi anh ơi!")
+      // Phân biệt lỗi cụ thể cho người dùng
+      if (error.message.includes('Email not confirmed')) {
+        setError("Email chưa được xác nhận! Anh kiểm tra hộp thư (hoặc Spam) rồi bấm link xác nhận nhé.")
+      } else if (error.message.includes('Invalid login credentials')) {
+        setError("Sai email hoặc mật khẩu rồi anh ơi! Anh kiểm tra lại giúp em nhé.")
+      } else {
+        setError(error.message)
+      }
       setLoading(false)
     } else {
       router.push('/admin/products')

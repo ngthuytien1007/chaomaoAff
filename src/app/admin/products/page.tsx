@@ -31,6 +31,19 @@ export default function AdminProductsPage() {
     setListError("");
     try {
       const res = await fetch("/api/admin/products", { method: "GET" });
+      
+      // Nếu bị redirect hoặc 401 → chưa đăng nhập
+      if (res.status === 401 || res.redirected) {
+        window.location.href = "/auth/login";
+        return;
+      }
+
+      // Kiểm tra response có phải JSON không (tránh parse HTML)
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      }
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Lỗi không xác định");
       setMyProducts(data.products || []);
@@ -81,8 +94,18 @@ export default function AdminProductsPage() {
 
       const res = await fetch("/api/admin/products", {
         method: "POST",
-        body: formData, // Không set Content-Type, trình duyệt tự xử lý boundary
+        body: formData,
       });
+
+      // Kiểm tra phiên đăng nhập
+      if (res.status === 401 || res.redirected) {
+        window.location.href = "/auth/login";
+        return;
+      }
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      }
 
       const data = await res.json();
 
