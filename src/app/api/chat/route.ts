@@ -208,6 +208,36 @@ export async function POST(req: NextRequest) {
                       req.headers.get('x-sportaiv-sid') ||
                       null;
 
+    // ── Giới hạn 10 câu hỏi / ngày / thiết bị ──────────────────────────
+    const MAX_QUESTIONS_PER_DAY = 10;
+    if (sessionId) {
+      try {
+        // Lấy đầu ngày hôm nay (giờ VN)
+        const todayVN = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Ho_Chi_Minh' });
+        const startOfDay = `${todayVN}T00:00:00+07:00`;
+
+        const { count, error } = await supabase
+          .from('chat_history')
+          .select('id', { count: 'exact', head: true })
+          .eq('session_id', sessionId)
+          .gte('created_at', startOfDay);
+
+        if (!error && count !== null && count >= MAX_QUESTIONS_PER_DAY) {
+          return NextResponse.json({
+            answer:
+              `Dạ anh ơi, hôm nay anh đã hỏi **${count}/${MAX_QUESTIONS_PER_DAY} câu** rồi ạ 😊\n\n` +
+              "Em giới hạn mỗi ngày 10 câu để phục vụ tốt nhất cho tất cả anh em nghệ nhân. " +
+              "**Ngày mai** anh quay lại em tư vấn tiếp cho anh nghen!\n\n" +
+              "Trong lúc chờ, anh có thể xem thêm sản phẩm lồng Thái, cám đấu bên dưới nhé ạ 🐦",
+            suggestedProducts: [],
+          });
+        }
+      } catch (err) {
+        console.error("❌ Lỗi kiểm tra rate limit:", err);
+        // Nếu lỗi DB → cho qua, không block khách
+      }
+    }
+
     // Chỉ giữ N messages gần nhất để tránh vượt token limit
     const trimmedMessages = messages.slice(-MAX_HISTORY_MESSAGES);
 
