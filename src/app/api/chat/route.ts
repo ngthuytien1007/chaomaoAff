@@ -196,6 +196,20 @@ export async function POST(req: NextRequest) {
 
     const lastUserMessage = (messages[messages.length - 1]?.content as string) || "";
 
+    // ── Kiểm tra độ dài tối thiểu: phải có ít nhất 4 từ ─────────────────
+    const wordCount = lastUserMessage.trim().split(/\s+/).filter(Boolean).length;
+    if (wordCount < 4) {
+      return NextResponse.json({
+        answer:
+          "Dạ anh ơi, anh mô tả rõ hơn giúp em nhé, ít nhất **4 từ** để em hiểu đúng ý anh! 😊\n\n" +
+          "Ví dụ:\n" +
+          "- \"chim bị sình bụng phải làm sao?\"\n" +
+          "- \"lồng nào tốt cho chim bổi?\"\n" +
+          "- \"cám gì kích lửa trước khi thi?\"",
+        suggestedProducts: [],
+      });
+    }
+
     // ── Kiểm tra tiếng Việt có dấu ──────────────────────────────────────
     if (isVietnameseWithoutDiacritics(lastUserMessage)) {
       return NextResponse.json({
